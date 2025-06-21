@@ -6,52 +6,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    // Create the addTask Function
-    function addTask() {
-        // Retrieve and trim the value from the task input field
-        const taskText = taskInput.value.trim();
+    // === Step 2: Function to load tasks from Local Storage ===
+    function loadTasks() {
+        // Get tasks from localStorage, or an empty array if none are found
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        
+        // Use addTask to display each task, but with saving turned OFF
+        storedTasks.forEach(taskText => addTask(taskText, false));
+    }
 
-        // Check if taskText is not empty
-        if (taskText === "") {
-            alert('Please enter a task.');
-            return; // Stop the function if the input is empty
-        }
-
-        // --- Task Creation and Removal (Updated Logic) ---
-
-        // Create a new li element
+    // === Step 1: Updated addTask function with a 'save' switch ===
+    function addTask(taskText, save = true) {
+        
+        // --- Part 1: Displaying the task on the screen (DOM) ---
         const listItem = document.createElement('li');
         listItem.textContent = taskText;
 
-        // Create a new button element for removing the task
         const removeButton = document.createElement('button');
         removeButton.textContent = 'Remove';
-        removeButton.className = 'remove-btn'; // Or removeButton.classList.add('remove-btn');
+        removeButton.className = 'remove-btn';
 
-        // **THE FIX IS HERE:** We now use addEventListener for the remove button.
+        // === Step 3: Update the remove button's logic ===
         removeButton.addEventListener('click', function() {
-            // When the remove button is clicked, we remove its parent, the <li>
+            // Remove from the screen
             taskList.removeChild(listItem);
+            
+            // Remove from the "storage locker" (localStorage)
+            removeTaskFromStorage(taskText);
         });
 
-        // Append the remove button to the li element
         listItem.appendChild(removeButton);
-        
-        // Append the li to taskList
         taskList.appendChild(listItem);
 
-        // Clear the task input field
-        taskInput.value = "";
+        // --- Part 2: Saving the task to the "storage locker" ---
+        if (save) {
+            const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            storedTasks.push(taskText);
+            // We use JSON.stringify to turn our list into a string, which is how localStorage saves things.
+            localStorage.setItem('tasks', JSON.stringify(storedTasks));
+        }
     }
 
-    // Attach Event Listeners
-    // Add event listener to addButton
-    addButton.addEventListener('click', addTask);
+    // Helper function for Step 3: Removing a specific task from localStorage
+    function removeTaskFromStorage(taskText) {
+        let storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        // Create a new list containing all tasks EXCEPT the one we want to remove
+        storedTasks = storedTasks.filter(task => task !== taskText);
+        localStorage.setItem('tasks', JSON.stringify(storedTasks));
+    }
 
-    // Add event listener to taskInput for the 'keypress' event
+    // --- Event Listeners for User Actions ---
+    
+    // Add button click
+    addButton.addEventListener('click', function() {
+        const taskText = taskInput.value.trim();
+        if (taskText === "") {
+            alert('Please enter a task.');
+            return;
+        }
+        addTask(taskText); // By default, this will save the task
+        taskInput.value = ""; 
+    });
+
+    // "Enter" key press
     taskInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
-            addTask();
+            const taskText = taskInput.value.trim();
+            if (taskText === "") {
+                alert('Please enter a task.');
+                return;
+            }
+            addTask(taskText); // By default, this will save the task
+            taskInput.value = "";
         }
     });
+    
+    // === Step 4: Load all saved tasks when the page first loads ===
+    loadTasks();
 });
