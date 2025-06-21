@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return; // Stop the function if the input is empty
         }
 
-        // Task Creation and Removal
+        // --- Task Creation and Removal (Updated Logic) ---
+
         // Create a new li element
         const listItem = document.createElement('li');
         listItem.textContent = taskText;
@@ -25,12 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create a new button element for removing the task
         const removeButton = document.createElement('button');
         removeButton.textContent = 'Remove';
-        removeButton.className = 'remove-btn'; // Use className to assign a class
+        removeButton.className = 'remove-btn'; // Or removeButton.classList.add('remove-btn');
 
-        // Assign an onclick event to the remove button
-        removeButton.onclick = function() {
+        // **THE FIX IS HERE:** We now use addEventListener for the remove button.
+        removeButton.addEventListener('click', function() {
+            // When the remove button is clicked, we remove its parent, the <li>
             taskList.removeChild(listItem);
-        };
+        });
 
         // Append the remove button to the li element
         listItem.appendChild(removeButton);
